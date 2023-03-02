@@ -64,7 +64,7 @@ Peach has PHP versions folder, used as storage of saved versions. By default it 
 ```
 peach phps path/to/php/versions/folder
 ```
-_hint:  path/to/php/versions/folder must be replaced to your custom PHP versions folder path.
+_hint:  path/to/php/versions/folder must be replaced to your custom PHP versions folder path._
 
 Also you can chage XAMPP folder by using:
 ```
