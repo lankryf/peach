@@ -32,7 +32,7 @@ func info(text string) {
 
 func checkerr(err error) {
 	if err != nil {
-		println("[error] ", err)
+		println("[error]", err.Error())
 		os.Exit(1)
 	}
 }
@@ -135,7 +135,7 @@ func loadPhpVersion(conf Config, version string) {
 func savePhpVersion(conf Config, path string, phpinichange bool) {
 	version, err := getPhpVersion(path)
 	if err != nil {
-		fmt.Println("[error] No php in main xaamp.")
+		fmt.Println("[error] No php in xaamp, can't save.")
 		os.Exit(1)
 	}
 	if phpinichange {
@@ -183,7 +183,7 @@ func formatPhpini(conf Config, path string) (err error) {
 
 func printHelp() {
 	fmt.Println(
-		"Hi there, I'm Peach.\nMade by LankryF\n\npeach setup              <- create work place !needed.\npeach xampp <path>       <- set xaamp folder path !needed.\npeach phps <path>        <- set php_versions folder (optional).\npeach list               <- list of your php versions.\npeach load <version>     <- load version (see peach list). Also saves current version.\npeach download <version> <- download version from the internet.")
+		"Hi there, I'm Peach.\nMade by LankryF\n\npeach setup              <- create workplace !needed.\npeach xampp <path>       <- set xaamp folder path !needed.\npeach phps <path>        <- set php_versions folder (optional).\npeach list               <- list of your php versions.\npeach load <version>     <- load version (see peach list). Also saves current version.\npeach download <version> <- download version from the internet.")
 }
 
 func (conf *Config) read() {
@@ -233,6 +233,24 @@ func main() {
 		printHelp()
 		os.Exit(0)
 
+	case "info":
+		configExists, err := pathExists(selfp + "\\config.json")
+		checkerr(err)
+		phpsExists, err := pathExists(selfp + "\\php_versions")
+		checkerr(err)
+		if configExists && phpsExists {
+			info("Setuped: YES")
+		} else {
+			info("Setuped: NO")
+		}
+		if conf.PhpVersionsFolderPath == selfp+"\\php_versions" {
+			info("Php versions folder: DEFAULT")
+		} else {
+			info("Php versions folder: " + conf.PhpVersionsFolderPath)
+		}
+		info("XAMPP folder path: " + conf.XamppPath)
+		os.Exit(0)
+
 	case "list":
 		files, err := ioutil.ReadDir(conf.PhpVersionsFolderPath)
 		if err != nil {
@@ -260,7 +278,7 @@ func main() {
 		os.Mkdir(selfp+"\\php_versions", os.ModePerm)
 		os.Mkdir(selfp+"\\temps", os.ModePerm)
 		conf.PhpVersionsFolderPath = selfp + "\\php_versions"
-		conf.XamppPath = "insert xampp path here"
+		conf.XamppPath = "IS NOT SET"
 		conf.write()
 		os.Exit(0)
 	}
@@ -275,10 +293,7 @@ func main() {
 		checkerr(clearFolder(selfp + "\\temps"))
 		info("Downloading...")
 		err := downloadPhpVersion(args[1], selfp+"\\temps\\downloaded_version.7z")
-		if err != nil {
-			fmt.Println("[error] Version wasn't found :(")
-			os.Exit(1)
-		}
+		checkerr(err)
 
 		info("Extracting...")
 		err = extractZip(selfp+"\\temps\\downloaded_version.7z", selfp+"\\temps")
@@ -305,7 +320,7 @@ func main() {
 		conf.XamppPath = args[1]
 		conf.write()
 
-	case "vers":
+	case "phps":
 		exists, err := pathExists(args[1])
 		checkerr(err)
 		if !exists {
