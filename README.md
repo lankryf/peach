@@ -1,11 +1,9 @@
 # Peach
 
 ## Introducing
----
 Hi there, I'm Peach, a console program created by LankryF to simplify the process of managing PHP versions for XAMPP.
 
 ## Installation
----
 1. To use Peach, simply [download](https://sourceforge.net/projects/lankryf-peach/files/latest/download) it onto your local machine.
 2. Move peach.exe file to any folder of your choice, but **it must be on the common disk with XAMPP**.
 3. Add peach folder path to environment settings.
@@ -28,7 +26,6 @@ After corect instalation output must be:
 ```
 
 ## Downloading versions
----
 To download PHP version simply use:
 ```
 peach download 8.0.25
@@ -37,7 +34,6 @@ _hint: as 8.0.25 you can write version you want._
 Wait for downloading and you can use this version.
 
 ## What versions do you have?
----
 You can check PHP versions by using:
 ```
 peach list
@@ -56,7 +52,6 @@ Popular versions for download:
 ```
 
 ## Loading version to XAMPP
----
 To load version from downloads you can use:
 ```
 peach load 8.0.25
@@ -65,7 +60,6 @@ _hint: as 8.0.25 you can write version you have._
 Current version will be saved to PHP versions folder.
 
 ## Customisation
----
 Peach has PHP versions folder, used as storage of saved versions. By default it apears in the same folder with Peach. You can chenge versions folder path by using:
 ```
 peach phps path/to/php/versions/folder
@@ -82,7 +76,6 @@ _hint: Replace 'path/to/your/xampp' with the path of your XAMPP folder._
 **Notice that XAAMP path and PHP versions folder path must be on the common disk with Peach.**
 
 ## Manual
----
 Peach has a small manual, which you can access by using:
 ```
 peach help
