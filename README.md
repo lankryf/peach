@@ -31,6 +31,7 @@ To download PHP version simply use:
 peach download 8.0.25
 ```
 _hint: as 8.0.25 you can write the version you want._
+
 Wait for downloading and you can use this version.
 
 ## What versions do you have?
@@ -57,6 +58,7 @@ To load version from downloads you can use:
 peach load 8.0.25
 ```
 _hint: as 8.0.25 you can write the version you have._
+
 Current version will be saved to PHP versions folder.
 
 ## Customisation
