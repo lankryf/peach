@@ -1,5 +1,4 @@
-# Peach
-
+<p align="center"><img src="https://raw.githubusercontent.com/lankryf/gallery/master/peach.png" width="400" alt="Laravel Logo"></p>
 ## Introducing
 Hi there, I'm Peach, a console program created by LankryF to simplify the process of managing PHP versions for XAMPP.
 
@@ -84,3 +83,5 @@ or just:
 ```
 peach
 ```
+## Mention
+Thanks, Black Sirius, for this sweet logo :)

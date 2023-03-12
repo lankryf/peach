@@ -20,3 +20,8 @@ config.json
 # workplace
 temps
 php_versions
+
+# res and icons
+*.rc
+*.res
+*.ico
