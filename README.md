@@ -34,7 +34,7 @@ _hint: as 8.0.25 you can write the version you want._
 
 Wait for downloading and you can use this version.
 
-Pay attention: you must have 7zip on your local machine to use this command.
+__Pay attention:__ you must have 7zip on your local machine to use this command.
 
 ## What versions do you have?
 You can check PHP versions by using:
