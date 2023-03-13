@@ -5,7 +5,7 @@ Hi there, I'm Peach, a console program created by LankryF to simplify the proces
 
 ## Installation
 1. To use Peach, simply [download](https://sourceforge.net/projects/lankryf-peach/files/latest/download) it onto your local machine.
-2. Move peach.exe file to any folder of your choice, but **it must be on the common disk with XAMPP**.
+2. Move peach.exe file to any folder of your choice, but **it must be on the common disk partition with XAMPP**.
 3. Add peach folder path to environment settings.
 4. And finaly you must to setup peach and set XAMPP folder path by using:
 ```
@@ -77,7 +77,7 @@ peach xampp path/to/your/xampp
 ```
 _hint: Replace 'path/to/your/xampp' with the path of your XAMPP folder._
 
-**Notice that XAAMP path and PHP versions folder path must be on the common disk with Peach.**
+**Notice that XAAMP path and PHP versions folder path must be on the common disk partition with Peach.**
 
 ## Manual
 Peach has a small manual, which you can access by using:
