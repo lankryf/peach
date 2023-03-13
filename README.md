@@ -64,15 +64,14 @@ _hint: as 8.0.25 you can write the version you have._
 Current version will be saved to PHP versions folder.
 
 ## Customisation
-Peach has PHP versions folder, used as storage of saved versions. By default it apears in the same folder with Peach. You can chenge versions folder path by using:
+Peach has PHP versions folder, used as storage of saved versions. By default it apears in the same folder with Peach. You can change versions folder path by using:
 ```
 peach phps path/to/php/versions/folder
 ```
 _hint:  path/to/php/versions/folder must be replaced to your custom PHP versions folder path._
 
-Also you can chage XAMPP folder by using:
+Also you can change XAMPP folder by using:
 ```
-peach setup
 peach xampp path/to/your/xampp
 ```
 _hint: Replace 'path/to/your/xampp' with the path of your XAMPP folder._
