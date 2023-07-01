@@ -29,57 +29,57 @@ import (
 func info(text string) {
 	println("[info]", text)
 }
+func errorAndExit(text string) {
+	println("[error]", text)
+	os.Exit(1)
+}
 
-func checkerr(err error) {
+func checkerr(err error, message string) {
 	if err != nil {
-		println("[error]", err.Error())
-		os.Exit(1)
+		errorAndExit(message)
 	}
 }
 
-func pathExists(path string) (bool, error) {
+func pathExists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
-		return true, nil
+		return true
 	}
 	if os.IsNotExist(err) {
-		return false, nil
+		return false
 	}
-	return false, err
+	errorAndExit("Fail to check path: " + path)
+	return false
 }
 
 func selfPath() (path string) {
 	ex, err := os.Executable()
-	checkerr(err)
+	checkerr(err, "Can't get self path.")
 	return filepath.Dir(ex)
 }
 
 func downloadFile(filepath, url string) error {
 	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
+	checkerr(err, "Can't create a destination file.")
 	defer out.Close()
+
 	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
+	checkerr(err, "Can't make an request. Check your internet connection.")
 	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Download status: %s", resp.Status)
 	}
 	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-	return nil
+	checkerr(err, "Can't write data to the file.")
+	return err
 }
 
-func extractZip(zipPath, destPath string) error {
+func extractZip(zipPath, destPath string) {
 	commandString := fmt.Sprintf("7z x %s -o%s", zipPath, destPath)
 	commandSlice := strings.Fields(commandString)
 	c := exec.Command(commandSlice[0], commandSlice[1:]...)
-	return c.Run()
+	checkerr(c.Run(), "Extracting error, maybe the archive is corrupted. Also check that you have 7zip on this machine.")
 }
 
 type Config struct {
@@ -87,131 +87,101 @@ type Config struct {
 	PhpVersionsFolderPath string
 }
 
-func getPhpVersion(path string) (version string, err error) {
+func getPhpVersion(path string) string {
 	out, err := ioutil.ReadFile(path + "\\php\\snapshot.txt")
-	if err != nil {
-		return "", err
-	}
-	return strings.Split(strings.Split(string(out), "Version: ")[1], "\n")[0], nil
+	checkerr(err, "Failed to check a PHP version from snapshot.txt")
+	return strings.Split(strings.Split(string(out), "Version: ")[1], "\n")[0]
 }
 
-func downloadPhpVersion(version, filepath string) error {
+func downloadPhpVersion(version, filepath string) {
 	url := "https://sourceforge.net/projects/xampp/files/XAMPP%%20Windows/%s/xampp-portable-windows-x64-%s-0-%s.7z/download"
-	var err error
-
 	for _, typ := range [...]string{"VS16", "VC15", "VC11"} {
-		err = downloadFile(filepath, fmt.Sprintf(url, version, version, typ))
+		err := downloadFile(filepath, fmt.Sprintf(url, version, version, typ))
 		if err == nil {
 			break
 		}
 	}
-	return err
 }
 
 func loadPhpVersion(conf Config, version string) {
-	exists, err := pathExists(conf.PhpVersionsFolderPath + "\\" + version)
-
-	checkerr(err)
+	exists := pathExists(conf.PhpVersionsFolderPath + "\\" + version)
 	if !exists {
-		fmt.Println("Version " + version + " isn't found.")
-		os.Exit(1)
+		errorAndExit("Version " + version + " isn't found.")
 	}
-	exists, err = pathExists(conf.XamppPath)
-	checkerr(err)
+	exists = pathExists(conf.XamppPath)
 	if !exists {
-		fmt.Println("[error] Invalid xampp path.")
-		os.Exit(1)
+		errorAndExit("Invalid xampp path.")
 	}
 	savePhpVersion(conf, conf.XamppPath, false)
-	err = os.Rename(conf.PhpVersionsFolderPath+"\\"+version+"\\php", conf.XamppPath+"\\php")
-	checkerr(err)
+	err := os.Rename(conf.PhpVersionsFolderPath+"\\"+version+"\\php", conf.XamppPath+"\\php")
+	checkerr(err, "Failed to load a PHP version to xampp.")
 	info("Php loaded. PHP " + version)
 	err = os.Rename(conf.PhpVersionsFolderPath+"\\"+version+"\\apache", conf.XamppPath+"\\apache")
-	checkerr(err)
+	checkerr(err, "Failed to load an Apache version to xampp.")
 	info("Apache loaded. PHP " + version)
 	os.Remove(conf.PhpVersionsFolderPath + "\\" + version)
 }
 
 func savePhpVersion(conf Config, path string, phpinichange bool) {
-	version, err := getPhpVersion(path)
-	if err != nil {
-		fmt.Println("[error] No php in xaamp, can't save.")
-		os.Exit(1)
-	}
+	version := getPhpVersion(path)
 	if phpinichange {
-		err = formatPhpini(conf, path)
-		if err != nil {
-			fmt.Println("[error] Format php.ini error:")
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		formatPhpini(conf, path)
 	}
 
-	exists, err := pathExists(conf.PhpVersionsFolderPath + "\\" + version)
-	checkerr(err)
+	exists := pathExists(conf.PhpVersionsFolderPath + "\\" + version)
 	if exists {
-		fmt.Println("[info] Version " + version + " is already in php_versions folder, it'll be overwritten.")
-		err = os.RemoveAll(conf.PhpVersionsFolderPath + "\\" + version)
-		checkerr(err)
+		info("Version " + version + " is already in the php_versions folder, it'll be overwritten.")
+		err := os.RemoveAll(conf.PhpVersionsFolderPath + "\\" + version)
+		checkerr(err, "Can't delete the excisting version "+version+" before download.")
 	}
 
-	err = os.Mkdir(conf.PhpVersionsFolderPath+"\\"+version, os.ModePerm)
-	checkerr(err)
+	err := os.Mkdir(conf.PhpVersionsFolderPath+"\\"+version, os.ModePerm)
+	checkerr(err, "Can't make and folder for the version.")
 	err = os.Rename(path+"\\php", conf.PhpVersionsFolderPath+"\\"+version+"\\php")
-	checkerr(err)
+	checkerr(err, "Can't move PHP to the php_versions folder.")
 	info("PHP saved. PHP " + version)
 	err = os.Rename(path+"\\apache", conf.PhpVersionsFolderPath+"\\"+version+"\\apache")
-	checkerr(err)
+	checkerr(err, "Can't move Apache to the php_versions folder.")
 	info("Apache saved. PHP " + version)
 }
 
-func formatPhpini(conf Config, path string) (err error) {
+func formatPhpini(conf Config, path string) {
 	out, err := ioutil.ReadFile(path + "\\php\\php.ini")
-	if err != nil {
-		return err
-	}
+	checkerr(err, "Failed to open the php.ini file.")
 	text := string(out)
 	text = strings.Replace(text, " \\xampp", " "+conf.XamppPath, -1)
 	text = strings.Replace(text, "\"\\xampp", "\""+conf.XamppPath, -1)
 	err = ioutil.WriteFile(path+"\\php\\php.ini", []byte(text), 0644)
-	if err != nil {
-		return err
-	}
+	checkerr(err, "Failed to write the php.ini file.")
 	info("php.ini formated.")
-	return nil
 }
 
 func printHelp() {
 	fmt.Println(
-		"Hi there, I'm Peach.\nMade by LankryF\n\npeach setup              <- create workplace !needed.\npeach xampp <path>       <- set xaamp folder path !needed.\npeach phps <path>        <- set php_versions folder (optional).\npeach list               <- list of your php versions.\npeach load <version>     <- load version (see peach list). Also saves current version.\npeach download <version> <- download version from the internet.")
+		"Hi there, I'm Peach.\nMade by LankryF\n\npeach setup              <- create workplace !needed.\npeach xampp <path>       <- set xaamp folder path !needed.\npeach phps <path>        <- set php_versions folder (optional).\npeach list               <- list of your php versions.\npeach load <version>     <- load version (see peach list). Also saves current version.\npeach download <version> <- download version from the internet.\npeach info               <- get info.")
 }
 
 func (conf *Config) read() {
 	file, err := os.Open(selfPath() + "\\config.json")
 	defer file.Close()
-	if err != nil {
-		fmt.Println("[error] config.json configuration file is not found. Use \"setup\" command!")
-		os.Exit(1)
-	}
+	checkerr(err, "peach config.json configuration file is not found. Use \"setup\" command!")
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&conf)
-	checkerr(err)
+	checkerr(err, "Failed to decode peach config file.")
 }
 
 func (conf *Config) write() {
 	content, err := json.MarshalIndent(conf, "", "  ")
-	checkerr(err)
+	checkerr(err, "Failed to generate a json file for config.")
 	err = ioutil.WriteFile(selfPath()+"\\config.json", content, 0644)
-	checkerr(err)
+	checkerr(err, "Failed to write config to the file config.json.")
 }
 
-func clearFolder(path string) error {
+func clearFolder(path string) {
 	err := os.RemoveAll(path)
-	if err != nil {
-		return err
-	}
+	checkerr(err, "Failed to delete a folder: "+path)
 	err = os.Mkdir(path, os.ModePerm)
-	return err
+	checkerr(err, "Failed to make a folder: "+path)
 }
 
 func main() {
@@ -234,10 +204,8 @@ func main() {
 		os.Exit(0)
 
 	case "info":
-		configExists, err := pathExists(selfp + "\\config.json")
-		checkerr(err)
-		phpsExists, err := pathExists(selfp + "\\php_versions")
-		checkerr(err)
+		configExists := pathExists(selfp + "\\config.json")
+		phpsExists := pathExists(selfp + "\\php_versions")
 		if configExists && phpsExists {
 			info("Setuped: YES")
 		} else {
@@ -257,7 +225,7 @@ func main() {
 			fmt.Println(err)
 		}
 		fmt.Println("Current version:")
-		version, err := getPhpVersion(conf.XamppPath)
+		version := getPhpVersion(conf.XamppPath)
 		if err != nil {
 			fmt.Println("	Invalid xampp path in config.")
 		} else {
@@ -284,48 +252,38 @@ func main() {
 	}
 
 	if len(args) != 2 {
-		fmt.Println("[error] There must be one argument: " + args[0] + " <argument>")
-		os.Exit(1)
+		errorAndExit("There must be one argument: " + args[0] + " <argument>")
 	}
 
 	switch args[0] {
 	case "download":
-		checkerr(clearFolder(selfp + "\\temps"))
+		clearFolder(selfp + "\\temps")
 		info("Downloading...")
-		err := downloadPhpVersion(args[1], selfp+"\\temps\\downloaded_version.7z")
-		checkerr(err)
+		downloadPhpVersion(args[1], selfp+"\\temps\\downloaded_version.7z")
 
 		info("Extracting...")
-		err = extractZip(selfp+"\\temps\\downloaded_version.7z", selfp+"\\temps")
-		if err != nil {
-			fmt.Println("[error] Extracting error, maybe the archive is corrupted. Also check that you have 7zip on this machine :(")
-			os.Exit(1)
-		}
+		extractZip(selfp+"\\temps\\downloaded_version.7z", selfp+"\\temps")
 
 		info("Saving version...")
 		savePhpVersion(conf, selfp+"\\temps\\xampp", true)
 
 		info("Clearing temps...")
-		checkerr(clearFolder(selfp + "\\temps"))
+		clearFolder(selfp + "\\temps")
 
 		info("Done!")
 
 	case "xampp":
-		exists, err := pathExists(args[1])
-		checkerr(err)
+		exists := pathExists(args[1])
 		if !exists {
-			fmt.Println("[error] Invalid path.")
-			os.Exit(1)
+			errorAndExit("Invalid path.")
 		}
 		conf.XamppPath = args[1]
 		conf.write()
 
 	case "phps":
-		exists, err := pathExists(args[1])
-		checkerr(err)
+		exists := pathExists(args[1])
 		if !exists {
-			fmt.Println("[error] Invalid path.")
-			os.Exit(1)
+			errorAndExit("Invalid path.")
 		}
 		conf.PhpVersionsFolderPath = args[1]
 		conf.write()
