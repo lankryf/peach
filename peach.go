@@ -158,7 +158,19 @@ func formatPhpini(conf Config, path string) {
 
 func printHelp() {
 	fmt.Println(
-		"Hi there, I'm Peach.\nMade by LankryF\n\npeach setup              <- create workplace !needed.\npeach xampp <path>       <- set xaamp folder path !needed.\npeach phps <path>        <- set php_versions folder (optional).\npeach list               <- list of your php versions.\npeach load <version>     <- load version (see peach list). Also saves current version.\npeach download <version> <- download version from the internet.\npeach info               <- get info.")
+		`Hi there, I'm Peach 1.1
+Made by LankryF
+ ___ ___   _   ___ _  _ 
+| _ \ __| /_\ / __| || |
+|  _/ _| / _ \ (__| __ |
+|_| |___/_/ \_\___|_||_|
+peach setup              <- create workplace !needed.
+peach xampp <path>       <- set xaamp folder path !needed.
+peach phps <path>        <- set php_versions folder (optional).
+peach list               <- list of your php versions.
+peach load <version>     <- load version (see peach list). Also saves current version.
+peach download <version> <- download version from the internet.
+peach info               <- get info.`)
 }
 
 func (conf *Config) read() {
